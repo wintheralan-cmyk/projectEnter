@@ -1,0 +1,69 @@
+[
+  {
+    "label": "carteira_oab",
+    "keywords": [
+      "inscricao",
+      "seccional",
+      "subsecao"
+    ],
+    "schema": {
+      "nome": "Nome do profissional, normalmente no canto superior esquerdo da imagem",
+      "inscricao": "Número de inscrição do profissional",
+      "seccional": "Seccional do profissional",
+      "subsecao": "Subseção à qual o profissional faz parte",
+      "categoria": "Categoria, pode ser ADVOGADO, ADVOGADA, SUPLEMENTAR, ESTAGIARIO, ESTAGIARIA",
+      "endereco_profissional": "Endereço profissional completo",
+      "telefone_profissional": "Telefone do profissional",
+      "situacao": "Situação do profissional, normalmente no canto inferior direito."
+    },
+    "extract_rules": {
+      "nome": "(() => { const l = text.split(/\\r?\\n/).map(s => s.trim()).filter(Boolean); return l.length ? l[0] : null })()",
+      "inscricao": "(() => { const m = text.match(/Inscri[^\\n]*\\n\\s*([0-9]{3,})/i); return m ? m[1] : null })()",
+      "seccional": "(() => { const m = text.match(/Inscri[^\\n]*\\n\\s*[0-9]{3,}\\s*([A-Z]{2})/i); return m ? m[1] : null })()",
+      "subsecao": "(() => { const lines = text.split(/\\r?\\n/).map(l => l.trim()).filter(Boolean); const idx = lines.findIndex(l => /Subseç(?:ão|ao)/i.test(l)); if(idx !== -1 && lines[idx+1]) return lines[idx+1]; const m = text.match(/^[0-9]+\\s+[A-Z]{2}\\s+(.+)/); return m ? m[1].trim() : null })()",
+      "categoria": "(() => { const m = text.match(/\\n(ADVOGADO|ADVOGADA|SUPLEMENTAR|ESTAGIARIO|ESTAGIARIA)\\n/i); return m ? m[1] : null })()",
+      "endereco_profissional": "(() => { const m = text.match(/Endere(?:ço|co) Profissional\\s*\\n([\\s\\S]+?)\\nTelefone Profissional/i); return m ? m[1].trim().replace(/\\n/g, ', ') : null })()",
+      "telefone_profissional": "(() => { const m = text.match(/Telefone Profissional\\s*\\n([\\d\\s\\-\\(\\)]+)/i); return m ? m[1].trim() : null })()",
+      "situacao": "(() => { const m = text.match(/Telefone Profissional\\s*\\n([A-ZÀ-Ú ]+)/i); return m ? m[1].trim() : null })()"
+    }
+  },
+  {
+    "label": "tela_sistema",
+    "keywords": [
+      "consulta",
+      "cobranca"
+    ],
+    "extraction_schema": {
+      "data_base": "Data base da operação selectionada",
+      "data_verncimento": "Data de vencimento da operação selectionada",
+      "quantidade_parcelas": "Quantidade de parcelas da operação selectionada",
+      "produto": "Produto da operação selectionada",
+      "tipo_de_operacao": "Tipo de operação",
+      "tipo_de_sistema": "Tipo de sistema",
+      "pesquisa_por": "Na consulta de cobrança, a pesquisa é efetuado por? Ela pode ser feita por cliente, parente, prestador ou outro",
+      "pesquisa_tipo": "Tipo de pesquisa, pode ser por cpf, cnpj, Nome ou email",
+      "sistema": "Sistema da operação selectionada",
+      "valor_parcela": "Valor da parcela da operação selectionada",
+      "cidade": "Cidade da operação selectionada",
+      "data_referencia": "Data de referencia da operação selectionada do detalhamento de saldos por parcelas",
+      "selecao_de_parcelas": "Seleção de parcelas da operação selectionada do detalhamento de saldos por parcelas, pode ser vencido, pago ou pendente",
+      "total_de_parcelas": "Valor total, normalmente no canto inferior esquerdo da imagem"
+    },
+    "extract_rules": {
+      "data_base": "(() => { const m = text.match(/Data Base\\s*Data Vencimento\\s*\\n(\\d{2}\\/\\d{2}\\/\\d{4})\\s+(\\d{2}\\/\\d{2}\\/\\d{4})/i); return m ? m[1] : null })()",
+      "data_vencimento": "(() => { const m = text.match(/Data Base\\s*Data Vencimento\\s*\\n(\\d{2}\\/\\d{2}\\/\\d{4})\\s+(\\d{2}\\/\\d{2}\\/\\d{4})/i); return m ? m[2] : null })()",
+      "quantidade_parcelas": "(() => { const m = text.match(/Qtd\\. Parcelas\\s*\\n(\\d+)/i); return m ? m[1] : null })()",
+      "produto": "(() => { const lines = text.split(/\\r?\\n/).map(l=>l.trim()).filter(Boolean); const idx = lines.findIndex(l=>/Produto/i.test(l)); return idx!==-1 && lines[idx+1] ? lines[idx+1].trim() : null })()",
+      "tipo_de_operacao": "(() => { const m = text.match(/Tipo Operação:\\s*([^\\n]+?)(?=Tipo Sistema:|$)/i); return m ? m[1].trim() : null })()",
+      "tipo_de_sistema": "(() => { const m = text.match(/Tipo Sistema:\\s*([^\\n]+)/i); return m ? m[1].trim() : null })()",
+      "pesquisa_por": "(() => { const m = text.match(/Pesquisar por:[\\s\\S]*?\\n([A-Z]+)/i); return m ? m[1].trim() : null })()",
+      "pesquisa_tipo": "(() => { const m = text.match(/Pesquisar por:[\\s\\S]*?\\n[A-Z]+\\s+([A-Z]+)/i); return m ? m[1].trim() : null })()",
+      "sistema": "(() => { const m = text.match(/Sistema\\s*\\n([A-Z]+)/i); return m ? m[1].trim() : null })()",
+      "valor_parcela": "(() => { const m = text.match(/VIr\\. Parc\\.\\s*\\n([0-9.,]+)/i); return m ? m[1].trim() : null })()",
+      "cidade": "(() => { const m = text.match(/Cidade:\\s*([^\\n]+?)\\s+U\\.F/i); return m ? m[1].trim() : null })()",
+      "data_referencia": "(() => { const m = text.match(/Data Referência:\\s*(\\d{2}\\/\\d{2}\\/\\d{4})/i); return m ? m[1] : null })()",
+      "selecao_de_parcelas": "(() => { const m = text.match(/Seleção de parcelas:\\s*([A-Z]+)/i); return m ? m[1].trim() : null })()",
+      "total_de_parcelas": "(() => { const m = text.match(/Total:\\s*([0-9.,]+)/i); return m ? m[1].trim() : null })()"
+    }
+  }
+]
